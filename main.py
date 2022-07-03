@@ -5,7 +5,7 @@ import random
 pygame.init()
 WIDTH, HEIGHT = 900, 700
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("First Game!")
+pygame.display.set_caption("Tetris!")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Calibri", 11, bold=True)
 available_pieces_list = ["I", "O", "L", "J", "S", "Z", "T"]
@@ -21,6 +21,8 @@ can_move_down = True
 
 DAS = 9
 ARR = 1
+SDF = 3
+GRAV = 20
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -89,15 +91,17 @@ def main():
     FPS = 60
 
     piecetype_selector = random.randint(0, 6)
-    T = gamemanager.tetromino(available_pieces_list[piecetype_selector])
+    T = gamemanager.tetromino(available_pieces_list[0])
     gs = gamemanager.gamestate(10, 24, 4)
     gs.update_tetromino(T)
     DAS_counter = 0
     ARR_counter = 0
+    GRAV_counter = 0
+    SDM = 1
+    end_piece = False
     keypress_old = {
         "RIGHT": False,
         "LEFT": False,
-        "DOWN": False
     }
 
     Create_Grid()
@@ -118,9 +122,11 @@ def main():
                     # CCW rotation
                     gs.rotate_tetromino(T, -1)
                 if event.key == pygame.K_RIGHT:
-                    gs.move_tetromino(T, 1)
+                    gs.move_tetromino(T, False, 1)
                 elif event.key == pygame.K_LEFT:
-                    gs.move_tetromino(T, -1)
+                    gs.move_tetromino(T, False, -1)
+                if event.key == pygame.K_DOWN:
+                    SDM = SDF
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     keypress_old["RIGHT"] = False
@@ -131,7 +137,7 @@ def main():
                     DAS_counter = 0
                     ARR_counter = 0
                 if event.key == pygame.K_DOWN:
-                    keypress_old["DOWN"] = False                    
+                    SDM = 1             
 
         keys_pressed = pygame.key.get_pressed()
         if keys_pressed[pygame.K_RIGHT]:
@@ -142,7 +148,7 @@ def main():
                     if ARR_counter < ARR:
                         ARR_counter += 1
                     elif ARR_counter == ARR:
-                        gs.move_tetromino(T, 1)
+                        gs.move_tetromino(T, False, 1)
                         ARR_counter = 0
             keypress_old["RIGHT"] = True
         if keys_pressed[pygame.K_LEFT]:
@@ -153,9 +159,24 @@ def main():
                     if ARR_counter < ARR:
                         ARR_counter += 1
                     elif ARR_counter == ARR:
-                        gs.move_tetromino(T, -1)
+                        gs.move_tetromino(T, False, -1)
                         ARR_counter = 0
-            keypress_old["LEFT"] = True
+            keypress_old["LEFT"] = True 
+        
+        if GRAV_counter < GRAV:
+            GRAV_counter += SDM
+        elif GRAV_counter >= GRAV:
+            end_piece = gs.move_tetromino(T, True, 1)
+            GRAV_counter = 0
+        
+        if end_piece == True:
+            end_piece = False
+            piecetype_selector = random.randint(0, 6)
+            T = gamemanager.tetromino(available_pieces_list[piecetype_selector])
+            for row in range(len(gs.grid)):
+                if gs.grid[row].count("-") == 0:
+                    gs.grid.pop(row)
+                    gs.grid.insert(0, ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"])
     
         draw_window(gs)
 

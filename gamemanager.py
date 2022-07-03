@@ -21,15 +21,22 @@ class gamestate():
         for coord in tetromino.Mino_Coords:
             self.grid[coord[1] + self.invisible_rows][coord[0]] = "-"
     
-    def test_collision(self, test_coords, original_coords):
+    def test_collision(self, test_coords, original_coords, down):
         validity = True
         for coord in test_coords:
             if coord[0] > self.grid_width or coord[0] < 0:
                 validity = False
+            elif coord[1] + self.invisible_rows < 0:
+                validity = False
+            elif coord[1] + self.invisible_rows > self.grid_height:
+                validity = "finished"
             else:
                 if self.grid[coord[1] + self.invisible_rows][coord[0]] != "-":
                     if not original_coords.count(coord) > 0:
-                        validity = False
+                        if down:
+                            validity = "finished"
+                        elif not down:
+                            validity = False
         
         return validity
     
@@ -46,16 +53,28 @@ class gamestate():
             tetromino.y += verification[2][1]
             self.update_tetromino(tetromino)
     
-    def move_tetromino(self, tetromino, direction):
+    def move_tetromino(self, tetromino, down, direction):
         test_coords = []
-        for coord in tetromino.Mino_Coords:
-            test_coords.append([coord[0] + direction, coord[1]])
-        can_move = self.test_collision(test_coords, tetromino.Mino_Coords)
+        if not down:
+            for coord in tetromino.Mino_Coords:
+                test_coords.append([coord[0] + direction, coord[1]])
+        if down:
+            for coord in tetromino.Mino_Coords:
+                test_coords.append([coord[0], coord[1] + direction])
+        can_move = self.test_collision(test_coords, tetromino.Mino_Coords, down)
         if can_move == True:
             self.destroy_tetromino(tetromino)
             tetromino.Mino_Coords = test_coords
-            tetromino.x += direction
+            if not down:
+                tetromino.x += direction
+            if down:
+                tetromino.y += direction
             self.update_tetromino(tetromino)
+            return False
+        elif can_move == False:
+            return False
+        elif can_move == "finished":
+            return True
 
 class tetromino():
     def __init__(self, type):
