@@ -83,7 +83,7 @@ def verify_rotation(gamestate, tetromino, rotation):
         verification = 0
         for coord in range(len(testable_rotation)):
             x = kick_tests[test_num][0] + testable_rotation[coord][0]
-            y = kick_tests[test_num][1] + testable_rotation[coord][1]
+            y = testable_rotation[coord][1] - kick_tests[test_num][1]
             if x >= 0 and x <= gamestate.grid_width:
                 if y + gamestate.invisible_rows >= 0 and y + gamestate.invisible_rows <= gamestate.grid_height:
                     test_coords.append([x, y])

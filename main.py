@@ -21,8 +21,8 @@ can_move_down = True
 
 DAS = 9
 ARR = 1
-SDF = 3
-GRAV = 20
+SDF = 30
+GRAV = 120
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
