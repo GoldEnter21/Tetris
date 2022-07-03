@@ -21,6 +21,18 @@ Rkicks = [[(0, 0), (-1, 0), (-1, +1), (0, -2), (-1, -2)],
           [(0, 0), (+1, 0), (+1, +1), (0, -2), (+1, -2)],
           ]
 
+RkicksI =[[(0, 0), (-2, 0), (+1, 0), (-2, -1), (+1, +2)],
+          [(0, 0), (+2, 0), (-1, 0), (+2, +1), (-1, -2)],
+          [(0, 0), (-1, 0), (+2, 0), (-1, +2), (+2, -1)],
+          [(0, 0), (+1, 0), (-2, 0), (+1, -2), (-2, +1)],
+          [(0, 0), (+2, 0), (-1, 0), (+2, +1), (-1, -2)],
+          [(0, 0), (-2, 0), (+1, 0), (-2, -1), (+1, +2)],
+          [(0, 0), (+1, 0), (-2, 0), (+1, -2), (-2, +1)],
+          [(0, 0), (-1, 0), (+2, 0), (-1, +2), (+2, -1)],
+          ]
+
+Wkicks = [(0, 0), (-1, 0), (+1, 0)]
+
 def matrice_to_coords(matrice):
     coords = []
     for num in matrice:
@@ -40,31 +52,60 @@ def verify_rotation(gamestate, tetromino, rotation):
         y = Prim_NRotcoords[coord][1]
         testable_rotation.append([tetromino.x + x, tetromino.y + y])
     
-    if tetromino.piecetype != "I":
-        kick_ind = Rkicklocs[rotation]
-        kick_tests = Rkicks[kick_ind]
+    use_wall_kicks = False
+    
+    for coord in testable_rotation:
+        if coord[0] < 0 or coord[0] > gamestate.grid_width:
+            use_wall_kicks = True
+            found_rotation = False
+            final_rotation_coords = []
+        elif coord[1] + gamestate.invisible_rows < 0 or coord[1] + gamestate.invisible_rows > gamestate.grid_height:
+            use_wall_kicks = True
+            found_rotation = False
+            final_rotation_coords = []
+    
+    if use_wall_kicks == False:
+        if tetromino.piecetype != "I":
+            kick_ind = Rkicklocs[rotation]
+            kick_tests = Rkicks[kick_ind]
+        elif tetromino.piecetype == "I":
+            kick_ind = Rkicklocs[rotation]
+            kick_tests = RkicksI[kick_ind]    
+
+    elif use_wall_kicks:
+        kick_tests = Wkicks   
 
     test_num = 0
     found_rotation = False
     final_rotation_coords = []
-    while test_num <= 4 and found_rotation == False:
+    while test_num <= len(kick_tests) - 1 and found_rotation == False:
         test_coords = []
         verification = 0
         for coord in range(len(testable_rotation)):
             x = kick_tests[test_num][0] + testable_rotation[coord][0]
             y = kick_tests[test_num][1] + testable_rotation[coord][1]
-            test_coords.append([x, y])
+            if x >= 0 and x <= gamestate.grid_width:
+                if y + gamestate.invisible_rows >= 0 and y + gamestate.invisible_rows <= gamestate.grid_height:
+                    test_coords.append([x, y])
         
-        for coord in test_coords:
-            if gamestate.grid[coord[1]][coord[0]] != "-":
-                test_num += 1
-                break
-            elif gamestate.grid[coord[1]][coord[0]] == "-":
-                verification += 1
-            if verification == 4:
-                found_rotation = True
-                final_rotation_coords = test_coords
-                break
-                
+        if len(test_coords) == 4:
+            for coord in test_coords:
+                if gamestate.grid[coord[1] + gamestate.invisible_rows][coord[0]] != "-":
+                    if not tetromino.Mino_Coords.count(coord) > 0:
+                        test_num += 1
+                        break
+                    elif tetromino.Mino_Coords.count(coord) > 0:
+                        verification += 1
+                elif gamestate.grid[coord[1] + gamestate.invisible_rows][coord[0]] == "-":
+                    verification += 1
+                if verification == len(kick_tests) - 1:
+                    found_rotation = True
+                    final_rotation_coords = test_coords
+                    break
+        else:
+            test_num += 1
+    
+    if test_num > len(kick_tests) - 1:
+        test_num = 0
         
-    return [found_rotation, final_rotation_coords]
+    return [found_rotation, final_rotation_coords, kick_tests[test_num]]

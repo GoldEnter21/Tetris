@@ -42,6 +42,8 @@ class gamestate():
             self.destroy_tetromino(tetromino)
             tetromino.Mino_Coords = verification[1]
             tetromino.rotationstate = str(rotationstates[ending_loc % 4])
+            tetromino.x += verification[2][0]
+            tetromino.y += verification[2][1]
             self.update_tetromino(tetromino)
     
     def move_tetromino(self, tetromino, direction):
