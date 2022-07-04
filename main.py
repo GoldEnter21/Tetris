@@ -21,8 +21,8 @@ can_move_down = True
 
 DAS = 9
 ARR = 1
-SDF = 30
-GRAV = 120
+SDF = 25
+GRAV = 40
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -90,19 +90,24 @@ def main():
 
     FPS = 60
 
-    piecetype_selector = random.randint(0, 6)
-    T = gamemanager.tetromino(available_pieces_list[0])
     gs = gamemanager.gamestate(10, 24, 4)
+    hq = gamemanager.upcoming()
+    piece_type = hq.queue[0]
+    T = gamemanager.tetromino(piece_type)
     gs.update_tetromino(T)
     DAS_counter = 0
     ARR_counter = 0
     GRAV_counter = 0
+    BAG_counter = 1
     SDM = 1
     end_piece = False
     keypress_old = {
         "RIGHT": False,
         "LEFT": False,
     }
+    print(hq.queue)
+    print(hq.hold)
+    end_piece = False
 
     Create_Grid()
 
@@ -127,6 +132,9 @@ def main():
                     gs.move_tetromino(T, False, -1)
                 if event.key == pygame.K_DOWN:
                     SDM = SDF
+                if event.key == pygame.K_c:
+                    new_piece = hq.update_hold(gs, T)
+                    T = gamemanager.tetromino(new_piece)
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     keypress_old["RIGHT"] = False
@@ -171,12 +179,19 @@ def main():
         
         if end_piece == True:
             end_piece = False
-            piecetype_selector = random.randint(0, 6)
-            T = gamemanager.tetromino(available_pieces_list[piecetype_selector])
+            BAG_counter += 1
+            hq.queue.pop(0)
+            new_piece = hq.queue[0]
+            T = gamemanager.tetromino(new_piece)
+            if BAG_counter == 7:
+                BAG_counter = 0
+                hq.recharge()
             for row in range(len(gs.grid)):
                 if gs.grid[row].count("-") == 0:
                     gs.grid.pop(row)
                     gs.grid.insert(0, ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"])
+            print(hq.queue)
+            print(hq.hold)
     
         draw_window(gs)
 

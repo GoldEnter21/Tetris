@@ -1,6 +1,8 @@
 import main
 import rotationkicks
+import random
 rotationstates = ["0", "R", "2", "L"]
+available_pieces = ["I", "O", "L", "J", "S", "Z", "T"]
 
 class gamestate():
     def __init__(self, grid_width, grid_height, invisibility_radius):
@@ -37,7 +39,6 @@ class gamestate():
                             validity = "finished"
                         elif not down:
                             validity = False
-        
         return validity
     
     def rotate_tetromino(self, tetromino, direction):
@@ -103,3 +104,37 @@ class tetromino():
             self.rotationstate = "0"
             self.x = 3
             self.y = -3
+
+class upcoming():
+    def __init__(self):
+        self.queue = []
+        i = 0
+        while i < 2:
+            pieces = available_pieces[:]
+            while len(pieces) > 0:
+                selector = random.randint(0, len(pieces) - 1)
+                selected_piece = pieces.pop(selector)
+                self.queue.append(selected_piece)
+            i += 1
+                
+        self.hold = []
+        self.hold_usable = True
+    
+    def recharge(self):
+        pieces = available_pieces[:]
+        while len(pieces) > 0:
+            selector = random.randint(0, len(pieces) - 1)
+            selected_piece = pieces.pop(selector)
+            self.queue.append(selected_piece)
+    
+    def update_hold(self, gamestate, tetromino):
+        holded_piece = self.queue.pop(0)
+        gamestate.destroy_tetromino(tetromino)
+        if len(self.hold) > 0:
+            unholded_piece = self.hold.pop(0)
+            self.queue.insert(0, unholded_piece)
+        elif len(self.hold) == 0:
+            unholded_piece = self.queue[0]
+        self.hold.append(holded_piece)
+        return unholded_piece
+        
