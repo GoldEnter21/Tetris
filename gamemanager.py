@@ -1,3 +1,4 @@
+from types import NoneType
 import main
 import rotationkicks
 import random
@@ -132,4 +133,6 @@ class upcoming():
                 unholded_piece = self.queue[0]
             self.hold.append(holded_piece)
             return unholded_piece
+        else:
+            return NoneType
             

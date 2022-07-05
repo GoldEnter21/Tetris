@@ -121,8 +121,9 @@ def main():
                     SDM = SDF
                 if event.key == pygame.K_c:
                     new_piece = hq.update_hold(gs, T)
+                    if hq.hold_usable:
+                        T = gamemanager.tetromino(new_piece)
                     hq.hold_usable = False
-                    T = gamemanager.tetromino(new_piece)
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     keypress_old["RIGHT"] = False
