@@ -98,7 +98,7 @@ def verify_rotation(gamestate, tetromino, rotation):
                         verification += 1
                 elif gamestate.grid[coord[1] + gamestate.invisible_rows][coord[0]] == "-":
                     verification += 1
-                if verification == len(kick_tests) - 1:
+                if verification == 4:
                     found_rotation = True
                     final_rotation_coords = test_coords
                     break

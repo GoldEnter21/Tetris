@@ -34,17 +34,6 @@ YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 PURPLE = (128, 0, 128)
 
-def Create_Grid():
-
-    for y in range(Grid_Height):
-        for x in range(Grid_Width):
-            eggs = x*(Square_Size + 1) + ((WIDTH / 2) - (Square_Size * Grid_Width / 2))
-            whys = y*(Square_Size + 1) + ((HEIGHT / 2) - (Square_Size * Grid_Height / 2))
-            rect = pygame.Rect(eggs, whys, Square_Size, Square_Size)
-            pygame.draw.rect(WIN, BLACK, rect)
-
-    pygame.display.update()
-
 def update_fps():
     coverrect = pygame.Rect(0, 0, 60, 40)
     pygame.draw.rect(WIN, BLACK, coverrect)
@@ -90,7 +79,7 @@ def main():
 
     FPS = 60
 
-    gs = gamemanager.gamestate(10, 24, 4)
+    gs = gamemanager.gamestate(Grid_Width, Grid_Height, 4)
     hq = gamemanager.upcoming()
     piece_type = hq.queue[0]
     T = gamemanager.tetromino(piece_type)
@@ -108,8 +97,6 @@ def main():
     print(hq.queue)
     print(hq.hold)
     end_piece = False
-
-    Create_Grid()
 
     run = True
     while run:
@@ -134,6 +121,7 @@ def main():
                     SDM = SDF
                 if event.key == pygame.K_c:
                     new_piece = hq.update_hold(gs, T)
+                    hq.hold_usable = False
                     T = gamemanager.tetromino(new_piece)
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
@@ -181,6 +169,7 @@ def main():
             end_piece = False
             BAG_counter += 1
             hq.queue.pop(0)
+            hq.hold_usable = True
             new_piece = hq.queue[0]
             T = gamemanager.tetromino(new_piece)
             if BAG_counter == 7:
