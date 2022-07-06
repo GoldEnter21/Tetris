@@ -10,6 +10,9 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont("Calibri", 11, bold=True)
 available_pieces_list = ["I", "O", "L", "J", "S", "Z", "T"]
 Grid_Width = 10
+Grid_Row = []
+for i in range(Grid_Width):
+    Grid_Row.append("-")
 Grid_Height = 24
 Invisible_Rows = 4
 if (576 / Grid_Width) <= (480 / Grid_Height):
@@ -90,10 +93,6 @@ def main():
     BAG_counter = 1
     SDM = 1
     end_piece = False
-    keypress_old = {
-        "RIGHT": False,
-        "LEFT": False,
-    }
     print(hq.queue)
     print(hq.hold)
     end_piece = False
@@ -108,10 +107,8 @@ def main():
                 run = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    # clockwise rotation
                     gs.rotate_tetromino(T, 1)
                 elif event.key == pygame.K_z:
-                    # CCW rotation
                     gs.rotate_tetromino(T, -1)
                 if event.key == pygame.K_RIGHT:
                     gs.move_tetromino(T, False, 1)
@@ -126,11 +123,9 @@ def main():
                     hq.hold_usable = False
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
-                    keypress_old["RIGHT"] = False
                     DAS_counter = 0
                     ARR_counter = 0
                 if event.key == pygame.K_LEFT:
-                    keypress_old["LEFT"] = False
                     DAS_counter = 0
                     ARR_counter = 0
                 if event.key == pygame.K_DOWN:
@@ -138,27 +133,23 @@ def main():
 
         keys_pressed = pygame.key.get_pressed()
         if keys_pressed[pygame.K_RIGHT]:
-            if keypress_old["RIGHT"] == True:
-                if DAS_counter < DAS:
-                    DAS_counter += 1
-                elif DAS_counter == DAS:
-                    if ARR_counter < ARR:
-                        ARR_counter += 1
-                    elif ARR_counter == ARR:
-                        gs.move_tetromino(T, False, 1)
-                        ARR_counter = 0
-            keypress_old["RIGHT"] = True
+            if DAS_counter < DAS:
+                DAS_counter += 1
+            elif DAS_counter == DAS:
+                if ARR_counter < ARR:
+                    ARR_counter += 1
+                elif ARR_counter == ARR:
+                    gs.move_tetromino(T, False, 1)
+                    ARR_counter = 0
         if keys_pressed[pygame.K_LEFT]:
-            if keypress_old["LEFT"] == True:
-                if DAS_counter < DAS:
-                    DAS_counter += 1
-                elif DAS_counter == DAS:
-                    if ARR_counter < ARR:
-                        ARR_counter += 1
-                    elif ARR_counter == ARR:
-                        gs.move_tetromino(T, False, -1)
-                        ARR_counter = 0
-            keypress_old["LEFT"] = True 
+            if DAS_counter < DAS:
+                DAS_counter += 1
+            elif DAS_counter == DAS:
+                if ARR_counter < ARR:
+                    ARR_counter += 1
+                elif ARR_counter == ARR:
+                    gs.move_tetromino(T, False, -1)
+                    ARR_counter = 0
         
         if GRAV_counter < GRAV:
             GRAV_counter += SDM
@@ -179,7 +170,7 @@ def main():
             for row in range(len(gs.grid)):
                 if gs.grid[row].count("-") == 0:
                     gs.grid.pop(row)
-                    gs.grid.insert(0, ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"])
+                    gs.grid.insert(0, Grid_Row[:])
             print(hq.queue)
             print(hq.hold)
     
