@@ -1,4 +1,3 @@
-from types import NoneType
 import main
 import rotationkicks
 import random
@@ -8,6 +7,8 @@ available_pieces = ["I", "O", "L", "J", "S", "Z", "T"]
 class gamestate():
     def __init__(self, grid_width, grid_height, invisibility_radius):
         self.grid = []
+        self.garbage = []
+        self.lowest_garb_level = grid_height
         for r in range(grid_height):
             self.grid.append([])
             for c in range(grid_width):
@@ -15,6 +16,30 @@ class gamestate():
         self.invisible_rows = invisibility_radius
         self.grid_width = grid_width - 1
         self.grid_height = grid_height - 1
+        for i in range(grid_width):
+            self.garbage.append(self.lowest_garb_level)
+    
+    def update_garbage(self):
+        searchable_indexs = main.searchable_indexes[:]
+        omitted_indexs = []
+        for row in range(len(self.grid)):
+            for c in searchable_indexs:
+                if self.grid[row][c] != "-":
+                    omitted_indexs.append(c)
+                    self.garbage[c] = row
+            for o in omitted_indexs:
+                searchable_indexs.remove(o)
+            omitted_indexs.clear()
+        for c in searchable_indexs:
+            self.garbage[c] = self.lowest_garb_level
+
+    def clear_rows(self):
+        for row in range(len(self.grid)):
+            if self.grid[row].count("-") == 0:
+                self.grid.pop(row)
+                self.grid.insert(0, main.Grid_Row[:])
+        self.update_garbage()
+        print(self.garbage)
 
     def update_tetromino(self, tetromino):
         for coord in tetromino.Mino_Coords:
@@ -134,5 +159,5 @@ class upcoming():
             self.hold.append(holded_piece)
             return unholded_piece
         else:
-            return NoneType
+            return None
             

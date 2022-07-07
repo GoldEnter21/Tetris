@@ -11,8 +11,11 @@ font = pygame.font.SysFont("Calibri", 11, bold=True)
 available_pieces_list = ["I", "O", "L", "J", "S", "Z", "T"]
 Grid_Width = 10
 Grid_Row = []
+searchable_indexes = []
 for i in range(Grid_Width):
     Grid_Row.append("-")
+for i in range(Grid_Width):
+    searchable_indexes.append(i)
 Grid_Height = 24
 Invisible_Rows = 4
 if (576 / Grid_Width) <= (480 / Grid_Height):
@@ -120,6 +123,8 @@ def main():
                     new_piece = hq.update_hold(gs, T)
                     if hq.hold_usable:
                         T = gamemanager.tetromino(new_piece)
+                        print(hq.queue)
+                        print(hq.hold)
                     hq.hold_usable = False
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
@@ -163,14 +168,11 @@ def main():
             hq.queue.pop(0)
             hq.hold_usable = True
             new_piece = hq.queue[0]
+            gs.clear_rows()
             T = gamemanager.tetromino(new_piece)
             if BAG_counter == 7:
                 BAG_counter = 0
                 hq.recharge()
-            for row in range(len(gs.grid)):
-                if gs.grid[row].count("-") == 0:
-                    gs.grid.pop(row)
-                    gs.grid.insert(0, Grid_Row[:])
             print(hq.queue)
             print(hq.hold)
     
