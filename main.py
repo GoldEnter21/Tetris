@@ -126,6 +126,9 @@ def main():
                         print(hq.queue)
                         print(hq.hold)
                     hq.hold_usable = False
+                if event.key == pygame.K_SPACE:
+                    gs.harddrop(T)
+                    end_piece = True
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     DAS_counter = 0
@@ -170,6 +173,7 @@ def main():
             new_piece = hq.queue[0]
             gs.clear_rows()
             T = gamemanager.tetromino(new_piece)
+            gs.update_tetromino(T)
             if BAG_counter == 7:
                 BAG_counter = 0
                 hq.recharge()

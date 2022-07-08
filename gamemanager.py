@@ -102,6 +102,24 @@ class gamestate():
             return False
         elif can_move == "finished":
             return True
+    
+    def harddrop(self, tetromino):
+        harddropcoords = {}
+        for coord in tetromino.Mino_Coords:
+            if coord[0] in harddropcoords.keys():
+                if harddropcoords[coord[0]] < coord[1]:
+                    harddropcoords.pop(coord[0])
+                    harddropcoords.update({coord[0] : coord[1]})
+            else:
+                harddropcoords.update({coord[0] : coord[1]})
+        for key in harddropcoords:
+            harddropcoords[key] = self.garbage[key] - harddropcoords[key]
+        harddrop = min(harddropcoords.values()) - 1 - self.invisible_rows
+        self.destroy_tetromino(tetromino)
+        for coord in tetromino.Mino_Coords:
+            coord[1] += harddrop
+        tetromino.y += harddrop
+        self.update_tetromino(tetromino)
 
 class tetromino():
     def __init__(self, type):
