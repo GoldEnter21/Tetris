@@ -1,10 +1,12 @@
 import pygame
 import gamemanager
+import piece_data
 import random
+import math
 
 pygame.init()
 WIDTH, HEIGHT = 900, 700
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Tetris!")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Calibri", 11, bold=True)
@@ -18,27 +20,35 @@ for i in range(Grid_Width):
     searchable_indexes.append(i)
 Grid_Height = 24
 Invisible_Rows = 4
-if (576 / Grid_Width) <= (480 / Grid_Height):
-    Square_Size = 576 / Grid_Height
-if (576 / Grid_Width) > (480 / Grid_Height):
-    Square_Size = 480 / Grid_Height
+Square_SizeD = 20
+Square_Size = 20
 Grid_rect_list = []
-can_move_down = True
 
 DAS = 9
 ARR = 1
 SDF = 25
 GRAV = 40
 
-WHITE = (255, 255, 255)
+V_LIGHT_GREY = (28, 28, 28)
 BLACK = (0, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-ORANGE = (255, 127, 0)
-YELLOW = (255, 255, 0)
-CYAN = (0, 255, 255)
-PURPLE = (128, 0, 128)
+GREEN = (130, 178, 49)
+BLUE = (78, 61, 164)
+RED = (178, 51, 58)
+ORANGE = (226, 111, 40)
+YELLOW = (178, 152, 49)
+CYAN = (49, 178, 130)
+PURPLE = (164, 61, 154)
+GREY = (40, 40, 40)
+
+colors = {
+    "I": CYAN,
+    "O": YELLOW,
+    "J": BLUE,
+    "L": ORANGE,
+    "Z": RED,
+    "S": GREEN,
+    "T": PURPLE
+}
 
 def update_fps():
     coverrect = pygame.Rect(0, 0, 60, 40)
@@ -47,37 +57,59 @@ def update_fps():
     fps_text = font.render(fps + " FPS", 1, pygame.Color("white"))
     WIN.blit(fps_text, (6,4))
 
-def draw_window(gamestate):
+def draw_window(gamestate, holdqueue):
+
+    def draw_outer_mino(RHOLS, CHOLS, disp, starting_locx, starting_locy, pez, u):
+        for r2 in range(RHOLS):
+            for c2 in range(CHOLS):
+                peace = disp[r2][c2]
+                if peace == 1:
+                    REAL_peace = pygame.Rect(starting_locx + (Square_Size + 1) * c2, starting_locy + (Square_Size + 1) * r2 + (u) * ((Square_Size + 1) * 3), Square_Size, Square_Size)
+                    pygame.draw.rect(WIN, colors[pez], REAL_peace)
+
+    mult_x = WIN.get_width() / WIDTH
+    mult_y = WIN.get_height() / HEIGHT
+    Square_Size = int(Square_SizeD * math.sqrt(mult_x * mult_y))
+    b_left = (WIN.get_width() / 2) - ((Square_Size + 1) * (Grid_Width / 2)) - 1
+    bh_top = (WIN.get_height() / 2) - ((Square_Size + 1) * (Grid_Height - Invisible_Rows) / 2) - 1
+    board_background = pygame.Rect(b_left, bh_top, (Square_Size + 1) * Grid_Width + 1, (Square_Size + 1) * (Grid_Height - Invisible_Rows) + 1)
+    pygame.draw.rect(WIN, V_LIGHT_GREY, board_background)
+    q_left = (WIN.get_width() / 2) + ((Square_Size + 1) * (Grid_Width / 2)) + 2
+    queue_background = pygame.Rect(q_left, bh_top, (Square_Size + 1) * 5 + 1, (Square_Size + 1) * 15 + 1)
+    pygame.draw.rect(WIN, V_LIGHT_GREY, queue_background)
+    h_left = (WIN.get_width() / 2) - ((Square_Size + 1) * (Grid_Width / 2)) - (Square_Size + 1) * 5 - 4
+    hold_background = pygame.Rect(h_left, bh_top, (Square_Size + 1) * 5 + 1, (Square_Size + 1) * 3 + 1)
+    pygame.draw.rect(WIN, V_LIGHT_GREY, hold_background)
+    for i in range(5):
+        queue_slot = pygame.Rect(q_left + 1, bh_top + 1 + (i) * ((Square_Size + 1) * 3), (Square_Size + 1) * 5 - 1, (Square_Size + 1) * 3 - 1)
+        pygame.draw.rect(WIN, BLACK, queue_slot)
     for r in range(Grid_Height):
         for c in range(Grid_Width):
             piece = gamestate.grid[r][c]
-            cols = c*(Square_Size + 1) + ((WIDTH / 2) - (Square_Size * Grid_Width / 2))
-            rols = r*(Square_Size + 1) + ((HEIGHT / 2) - (Square_Size * Grid_Height / 2))
+            cols = c*(Square_Size + 1) + ((WIN.get_width() / 2) - ((Square_Size + 1) * Grid_Width / 2))
+            rols = r*(Square_Size + 1) + ((WIN.get_height() / 2) - ((Square_Size + 1) * (Grid_Height - Invisible_Rows) / 2)) - ((Square_Size + 1) * Invisible_Rows)
             if piece != "-":
                 tetrominodominay = pygame.Rect(cols, rols, Square_Size, Square_Size)
-                if piece == "S":
-                    pygame.draw.rect(WIN, GREEN, tetrominodominay)
-                elif piece == "Z":
-                    pygame.draw.rect(WIN, RED, tetrominodominay)
-                elif piece == "J":
-                    pygame.draw.rect(WIN, BLUE, tetrominodominay)
-                elif piece == "L":
-                    pygame.draw.rect(WIN, ORANGE, tetrominodominay)
-                elif piece == "O":
-                    pygame.draw.rect(WIN, YELLOW, tetrominodominay)
-                elif piece == "I":
-                    pygame.draw.rect(WIN, CYAN, tetrominodominay)
-                elif piece == "T":
-                    pygame.draw.rect(WIN, PURPLE, tetrominodominay)
+                pygame.draw.rect(WIN, colors[piece], tetrominodominay)
 
             elif piece == "-":
-                if r <= Invisible_Rows:
-                    tetrominodominay = pygame.Rect(cols, rols, Square_Size, Square_Size)
-                    pygame.draw.rect(WIN, BLACK, tetrominodominay)
-                elif r > Invisible_Rows:
-                    tetrominodominay = pygame.Rect(cols, rols, Square_Size, Square_Size)
-                    pygame.draw.rect(WIN, WHITE, tetrominodominay)
+                tetrominodominay = pygame.Rect(cols, rols, Square_Size, Square_Size)
+                pygame.draw.rect(WIN, BLACK, tetrominodominay)
+    for u in range(5):
+        queue_display = piece_data.hq_dict[holdqueue.queue[u + 1]]
+        rrols = len(queue_display)
+        ccols = len(queue_display[0])
+        starting_locx = q_left + 1 + (((Square_Size + 1) * 5 - 1) / 2 - (Square_Size + 1) * ccols /2)
+        starting_locy = bh_top + 1 + (((Square_Size + 1) * 3 - 1) / 2 - (Square_Size + 1) * rrols /2)
+        draw_outer_mino(rrols, ccols, queue_display, starting_locx, starting_locy, holdqueue.queue[u + 1], u)
 
+    if len(holdqueue.hold) > 0:
+        hold_display = piece_data.hq_dict[holdqueue.hold[0]]
+        rrrols = len(hold_display)
+        cccols = len(hold_display[0])
+        htarting_locx = h_left + 1 + (((Square_Size + 1) * 5 - 1) / 2 - (Square_Size + 1) * cccols /2)
+        htarting_locy = bh_top + 1 + (((Square_Size + 1) * 3 - 1) / 2 - (Square_Size + 1) * rrrols /2)
+        draw_outer_mino(rrrols, cccols, hold_display, htarting_locx, htarting_locy, holdqueue.hold[0], 0)
     update_fps()
     pygame.display.update()
 
@@ -95,9 +127,6 @@ def main():
     GRAV_counter = 0
     BAG_counter = 1
     SDM = 1
-    end_piece = False
-    print(hq.queue)
-    print(hq.hold)
     end_piece = False
 
     run = True
@@ -123,8 +152,7 @@ def main():
                     new_piece = hq.update_hold(gs, T)
                     if hq.hold_usable:
                         T = gamemanager.tetromino(new_piece)
-                        print(hq.queue)
-                        print(hq.hold)
+                        gs.update_tetromino(T)
                     hq.hold_usable = False
                 if event.key == pygame.K_SPACE:
                     gs.harddrop(T)
@@ -177,10 +205,8 @@ def main():
             if BAG_counter == 7:
                 BAG_counter = 0
                 hq.recharge()
-            print(hq.queue)
-            print(hq.hold)
     
-        draw_window(gs)
+        draw_window(gs, hq)
 
     pygame.quit()
 

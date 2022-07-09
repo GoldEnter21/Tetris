@@ -1,4 +1,4 @@
-import rotations
+import piece_data
 
 Rkicklocs = {
     "0->R": 0,
@@ -43,7 +43,7 @@ def matrice_to_coords(matrice):
     return coords
 
 def verify_rotation(gamestate, tetromino, rotation):
-    Rot_all = rotations.type_matchup[tetromino.piecetype]
+    Rot_all = piece_data.type_matchup[tetromino.piecetype]
     matrice_NRot = Rot_all[rotation[3]]
     Prim_NRotcoords = matrice_to_coords(matrice_NRot)
     testable_rotation = []

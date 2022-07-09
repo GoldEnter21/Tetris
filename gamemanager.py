@@ -39,7 +39,6 @@ class gamestate():
                 self.grid.pop(row)
                 self.grid.insert(0, main.Grid_Row[:])
         self.update_garbage()
-        print(self.garbage)
 
     def update_tetromino(self, tetromino):
         for coord in tetromino.Mino_Coords:
@@ -154,7 +153,6 @@ class upcoming():
                 selected_piece = pieces.pop(selector)
                 self.queue.append(selected_piece)
             i += 1
-                
         self.hold = []
         self.hold_usable = True
     
