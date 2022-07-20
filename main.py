@@ -1,7 +1,6 @@
 import pygame
 import gamemanager
 import piece_data
-import random
 import math
 
 pygame.init()
@@ -26,8 +25,9 @@ Grid_rect_list = []
 
 DAS = 9
 ARR = 1
-SDF = 25
-GRAV = 40
+SDF = 30
+GRAV = 30
+GRACE = GRAV
 
 V_LIGHT_GREY = (28, 28, 28)
 BLACK = (0, 0, 0)
@@ -125,7 +125,9 @@ def main():
     DAS_counter = 0
     ARR_counter = 0
     GRAV_counter = 0
+    GRACE_counter = 0
     BAG_counter = 1
+    hard_dropped = False
     SDM = 1
     end_piece = False
 
@@ -147,7 +149,10 @@ def main():
                 elif event.key == pygame.K_LEFT:
                     gs.move_tetromino(T, False, -1)
                 if event.key == pygame.K_DOWN:
-                    SDM = SDF
+                    if SDF != "inf":
+                        SDM = SDF
+                    elif SDF == "inf":
+                        gs.harddrop(T)
                 if event.key == pygame.K_c:
                     new_piece = hq.update_hold(gs, T)
                     if hq.hold_usable:
@@ -157,6 +162,8 @@ def main():
                 if event.key == pygame.K_SPACE:
                     gs.harddrop(T)
                     end_piece = True
+                    hard_dropped = True
+                    GRACE_counter = GRACE - 1
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     DAS_counter = 0
@@ -189,22 +196,28 @@ def main():
         
         if GRAV_counter < GRAV:
             GRAV_counter += SDM
-        elif GRAV_counter >= GRAV:
+        elif GRAV_counter >= GRAV and hard_dropped != True:
             end_piece = gs.move_tetromino(T, True, 1)
             GRAV_counter = 0
         
         if end_piece == True:
-            end_piece = False
-            BAG_counter += 1
-            hq.queue.pop(0)
-            hq.hold_usable = True
-            new_piece = hq.queue[0]
-            gs.clear_rows()
-            T = gamemanager.tetromino(new_piece)
-            gs.update_tetromino(T)
-            if BAG_counter == 7:
-                BAG_counter = 0
-                hq.recharge()
+            GRACE_counter += 1
+            if GRACE_counter == GRACE:
+                hard_dropped = False
+                GRACE_counter = 0
+                end_piece = False
+                BAG_counter += 1
+                hq.queue.pop(0)
+                hq.hold_usable = True
+                new_piece = hq.queue[0]
+                gs.clear_rows()
+                T = gamemanager.tetromino(new_piece)
+                gs.update_tetromino(T)
+                if BAG_counter == 7:
+                    BAG_counter = 0
+                    hq.recharge()
+        elif end_piece == False:
+            GRACE_counter = 0
     
         draw_window(gs, hq)
 
